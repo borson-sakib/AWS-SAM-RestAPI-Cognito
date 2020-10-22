@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  my-sls-app
+
+  Sample SAM Template for my-sls-app
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 60
+
+Resources:
+  GetTransactionFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: GetTransaction
+      Description: Sam Demo (Get-Transaction)
+      Role: arn:aws:iam::534678543881:role/admin_access #arn:aws:iam::534678543881:role/hello-world-HelloWorldFunctionRole-A2N473AFEKHH
+      CodeUri: get-transaction/
+      Handler: main.lambda_handler
+      Runtime: python3.7
+      Events:
+        GetTransactionApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /gettrans
+            Method: get
+
+  PostTransactionFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: PostTransaction
+      Description: Sam Demo (Post-Transaction)
+      Role: arn:aws:iam::534678543881:role/admin_access #arn:aws:iam::534678543881:role/hello-world-HelloWorldFunctionRole-A2N473AFEKHH
+      CodeUri: post-transaction/
+      Handler: post.lambda_handler
+      Runtime: python3.7
+      Events:
+        PostTransactionApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /gettrans
+            Method: post
+  MyCognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: sam-cognito-pool
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: false
+
+  MyCognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref MyCognitoUserPool
+      ClientName: sam-cognito-client
+      GenerateSecret: false
+
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+      Auth:
+        DefaultAuthorizer: MyCognitoAuthorizer
+        Authorizers:
+          MyCognitoAuthorizer:
+            UserPoolArn: !GetAtt MyCognitoUserPool.Arn
+
+

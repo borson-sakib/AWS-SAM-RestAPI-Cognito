@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "transaction-sam-cli"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1m733pte47ym6"
+s3_prefix = "transaction-sam-cli"
+region = "us-east-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
